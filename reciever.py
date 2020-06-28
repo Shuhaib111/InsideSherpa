@@ -1,4 +1,5 @@
 import requests 
+import json
 
 configurations={
     "CPU_UTILIZATION": 85,
@@ -14,7 +15,6 @@ def check(data):
         alert.append("MEMORY_UTILIZATION VIOLATED")
     if(data["DISK_UTILIZATION"] > configurations["DISK_UTILIZATION"]):
         alert.append("DISK_UTILIZATION VIOLATED")
-    print(alert)
     if(len(alert) > 1):
         return("Alert",alert)
     else:
@@ -24,13 +24,15 @@ URL = "http://127.0.0.1:5000/"
 
 res = requests.get(URL)
 
-data = res.json()
+res_json = res.json()
 
-result, alert = check(data)
 
-print(result,end=", ")
+for data_json in res_json:
 
-for i in range(len(alert)-1):
-    print(alert[i],end=", ")
+    data = json.loads(data_json)
 
-print(alert[len(alert) - 1])
+    result, alert = check(data)
+
+    response = requests.post(URL,{"result":result,"alerts":alert})
+
+    print(response.text)
